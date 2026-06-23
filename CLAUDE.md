@@ -4,65 +4,65 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This repository stores custom AI skills (slash commands) developed for use with Claude Code. It is designed to be used as a **git submodule** in other projects.
+Claude Code 工具箱，包含 skills（斜杠命令）、设计主题系统、MCP servers。以 **git submodule** 方式嵌入其他项目使用。
 
 ## Directory Structure
 
 ```
-xk-skills/
-├── bin/cli.js              # CLI 入口 (npx xk-skills)
-├── package.json            # npm 包配置
-├── *.md                    # Root-level skills (slash commands)
-├── frontend/
-│   └── design-themes/      # Design theme system
-│       ├── presets/         # Theme presets (fluent, glassmorphism, ...)
-│       ├── compiler/        # design-spec.json → tokens.css + style.css + SKILL.md
-│       ├── generated/       # Compiler output (gitignored)
-│       └── schema.json      # JSON Schema for design-spec.json
-├── ops/
-│   └── git-commit/         # Git 提交规范 skill
+xk-claude-kit/
+├── bin/cli.js              # CLI 入口 (npx xk-claude-kit)
+├── package.json
+├── skills/                 # 可安装的 skill（每个子目录含 SKILL.md）
+│   └── git-commit/         # Git 提交规范
+├── tools/                  # 有构建流程的工具（产出也是 skill）
+│   └── design-themes/      # 设计主题系统
+│       ├── schema.json     # design-spec.json 的 JSON Schema
+│       ├── compiler/       # design-spec.json → tokens.css + style.css + SKILL.md
+│       ├── presets/        # 主题预设（fluent, glassmorphism, modern-neutral）
+│       └── README.md
+├── mcp/                    # MCP servers（独立可执行服务）
+│   └── xukiblog/           # XukiBlogs 博客管理
+│       ├── index.js
+│       ├── package.json
+│       └── README.md
 └── CLAUDE.md
 ```
 
 ## Skill File Structure
 
-Skills are `.md` files organized by domain. Each skill file typically contains:
-- A frontmatter block with metadata (name, description, trigger conditions)
-- The skill body with instructions, prompts, and any embedded logic
+Skills 是 `skills/` 下的目录，每个含一个 `SKILL.md` 文件：
+- Frontmatter：name、description、触发条件
+- Body：指令、提示词、嵌入逻辑
+
+CLI 递归扫描所有 `SKILL.md`，用父目录名作为 skill 名。
 
 ## Design Themes
 
-Each theme preset lives in `frontend/design-themes/presets/<name>/` and contains:
-- `design-spec.json` — Source of truth (hand-edited)
-- `tokens.css` — Generated CSS variables
-- `style.css` — Generated spatial metaphor styles
-- `SKILL.md` — Generated skill documentation
+每个主题 preset 在 `tools/design-themes/presets/<name>/` 下：
+- `design-spec.json` — 手写的设计声明
+- `tokens.css` — 编译生成的 CSS 变量
+- `style.css` — 编译生成的空间隐喻样式
+- `SKILL.md` — 编译生成的文档
 
-To recompile a theme:
+重新编译：
 ```sh
-node frontend/design-themes/compiler/compile.cjs frontend/design-themes/presets/<name>/design-spec.json
+node tools/design-themes/compiler/compile.cjs tools/design-themes/presets/<name>/design-spec.json
 ```
-
-## Working with Skills
-
-- Skills are invoked in Claude Code via `/skill-name` syntax
-- When creating new skills, follow the existing patterns in the repo
-- Skill names should be lowercase, hyphenated (e.g., `my-skill.md`)
 
 ## npm 安装
 
 ```sh
 # 安装全部 skill
-npx xk-skills install
+npx xk-claude-kit install
 
 # 只安装指定 skill
-npx xk-skills install git-commit
+npx xk-claude-kit install git-commit
 
 # 列出所有可用 skill
-npx xk-skills list
+npx xk-claude-kit list
 
 # 卸载已安装的 skill
-npx xk-skills uninstall
+npx xk-claude-kit uninstall
 ```
 
 安装后重启 Claude Code 即可通过 `/skill-name` 使用。

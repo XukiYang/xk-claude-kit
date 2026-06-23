@@ -81,8 +81,8 @@ Dark space background + frosted glass surfaces + luminous accents.
 
 ```js
 // main.js or per-view <style> block
-import './frontend/design-themes/presets/glassmorphism/tokens.css'
-import './frontend/design-themes/presets/glassmorphism/style.css'
+import './tools/design-themes/presets/glassmorphism/tokens.css'
+import './tools/design-themes/presets/glassmorphism/style.css'
 ```
 
 ```js

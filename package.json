@@ -1,14 +1,15 @@
 {
-  "name": "xk-skills",
+  "name": "xk-claude-kit",
   "version": "0.1.0",
-  "description": "自定义 Claude Code skills 集合，支持设计主题、运维规范等",
+  "description": "Claude Code 工具箱：skills、设计主题、MCP servers",
   "bin": {
-    "xk-skills": "./bin/cli.js"
+    "xk-claude-kit": "./bin/cli.js"
   },
   "files": [
     "bin/",
-    "frontend/",
-    "ops/"
+    "skills/",
+    "tools/",
+    "mcp/"
   ],
   "keywords": ["claude", "skills", "claude-code", "commands"],
   "license": "MIT"

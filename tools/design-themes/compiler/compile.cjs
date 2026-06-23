@@ -4,7 +4,7 @@
  * Design Spec Compiler
  * Reads design-spec.json → generates tokens.css + style.css + SKILL.md
  *
- * Usage: node frontend/design-themes/compiler/compile.cjs <design-spec.json>
+ * Usage: node tools/design-themes/compiler/compile.cjs <design-spec.json>
  */
 
 const fs = require('fs');
@@ -697,9 +697,9 @@ function generateSkillMD(spec) {
   lines.push('');
   lines.push('```js');
   lines.push(`// main.js or per-view <style> block`);
-  lines.push(`import './frontend/design-themes/presets/${spec.name}/tokens.css'`);
+  lines.push(`import './tools/design-themes/presets/${spec.name}/tokens.css'`);
   if (metaphor !== 'flat') {
-    lines.push(`import './frontend/design-themes/presets/${spec.name}/style.css'`);
+    lines.push(`import './tools/design-themes/presets/${spec.name}/style.css'`);
   }
   lines.push('```');
   lines.push('');
@@ -762,7 +762,7 @@ function compile(specPath) {
 // Run
 const specPath = process.argv[2];
 if (!specPath) {
-  console.error('Usage: node frontend/design-themes/compiler/compile.cjs <design-spec.json>');
+  console.error('Usage: node tools/design-themes/compiler/compile.cjs <design-spec.json>');
   process.exit(1);
 }
 compile(path.resolve(specPath));

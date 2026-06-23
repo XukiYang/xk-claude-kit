@@ -44,8 +44,8 @@ design-spec.json ──→ compile.cjs ──→ tokens.css + style.css + SKILL.
 ### 编译现有主题
 
 ```bash
-node .claude/skills/frontend/design-themes/compiler/compile.cjs \
-  .claude/skills/frontend/design-themes/presets/fluent/design-spec.json
+node tools/design-themes/compiler/compile.cjs \
+  tools/design-themes/presets/fluent/design-spec.json
 ```
 
 ### 创建新主题
@@ -73,8 +73,8 @@ applyDesign('fluent', {        // 带覆盖值
 ### 静态引入（单个视图）
 
 ```css
-@import '../../.claude/skills/frontend/design-themes/presets/glassmorphism/tokens.css';
-@import '../../.claude/skills/frontend/design-themes/presets/glassmorphism/style.css';
+@import '../../tools/design-themes/presets/glassmorphism/tokens.css';
+@import '../../tools/design-themes/presets/glassmorphism/style.css';
 ```
 
 ## design-spec.json 字段说明

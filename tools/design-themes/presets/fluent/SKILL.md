@@ -78,8 +78,8 @@ Fluent Design (Windows 11) — open, friendly, efficient. Soft gray base + white
 
 ```js
 // main.js or per-view <style> block
-import './frontend/design-themes/presets/fluent/tokens.css'
-import './frontend/design-themes/presets/fluent/style.css'
+import './tools/design-themes/presets/fluent/tokens.css'
+import './tools/design-themes/presets/fluent/style.css'
 ```
 
 ```js

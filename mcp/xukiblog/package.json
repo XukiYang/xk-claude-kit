@@ -1,0 +1,14 @@
+{
+  "name": "xukiblog-mcp",
+  "version": "0.1.0",
+  "description": "XukiBlogs MCP Server - Claude Code 博客管理工具",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "xukiblog-mcp": "./index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "license": "MIT"
+}

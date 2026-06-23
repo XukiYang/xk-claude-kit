@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PKG_ROOT = path.resolve(__dirname, '..');
-const MANIFEST = '.xk-skills-manifest.json';
+const MANIFEST = '.xk-claude-kit-manifest.json';
 
 // ---------------------------------------------------------------------------
 // Skill discovery
@@ -68,7 +68,7 @@ function cmdInstall(targets) {
       const found = allSkills.find(s => s.name === t);
       if (!found) {
         console.error(`Skill not found: ${t}`);
-        console.error(`Run "npx xk-skills list" to see available skills.`);
+        console.error(`Run "npx xk-claude-kit list" to see available skills.`);
         process.exit(1);
       }
       toInstall.push(found);
@@ -114,7 +114,7 @@ function cmdUninstall() {
   const manifestPath = path.join(commandsDir, MANIFEST);
 
   if (!fs.existsSync(manifestPath)) {
-    console.log('No xk-skills manifest found. Nothing to uninstall.');
+    console.log('No xk-claude-kit manifest found. Nothing to uninstall.');
     return;
   }
 
@@ -152,9 +152,9 @@ switch (cmd) {
     break;
   default:
     console.log(`Usage:
-  xk-skills list                 列出所有可用 skill
-  xk-skills install              安装全部 skill 到 .claude/commands/
-  xk-skills install <name>       安装指定 skill
-  xk-skills uninstall            移除已安装的 skill`);
+  xk-claude-kit list                 列出所有可用 skill
+  xk-claude-kit install              安装全部 skill 到 .claude/commands/
+  xk-claude-kit install <name>       安装指定 skill
+  xk-claude-kit uninstall            移除已安装的 skill`);
     break;
 }

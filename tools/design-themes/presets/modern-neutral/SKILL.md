@@ -72,7 +72,7 @@ Clean, generic, platform-agnostic. Blue accent on neutral gray skeleton.
 
 ```js
 // main.js or per-view <style> block
-import './frontend/design-themes/presets/modern-neutral/tokens.css'
+import './tools/design-themes/presets/modern-neutral/tokens.css'
 ```
 
 ```js
