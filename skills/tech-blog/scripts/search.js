@@ -161,6 +161,34 @@ function detectSource(url) {
 }
 
 /**
+ * 带并发控制的批量搜索
+ */
+async function searchWithConcurrency(query, sources, concurrency = 4) {
+  const results = [];
+  for (let i = 0; i < sources.length; i += concurrency) {
+    const batch = sources.slice(i, i + concurrency);
+    const settled = await Promise.allSettled(
+      batch.map(async (src) => {
+        const items = await searchBing(query, src.site, 3);
+        for (const r of items) {
+          r.source = detectSource(r.url);
+        }
+        return items;
+      })
+    );
+    for (const s of settled) {
+      if (s.status === 'fulfilled') {
+        results.push(...s.value);
+      }
+    }
+    if (i + concurrency < sources.length) {
+      await sleep(300);
+    }
+  }
+  return results;
+}
+
+/**
  * 搜索单个源分类
  */
 async function searchSource(query, sourceKey) {
@@ -170,24 +198,7 @@ async function searchSource(query, sourceKey) {
     return [];
   }
 
-  const allResults = [];
-
-  for (const src of sources) {
-    try {
-      const results = await searchBing(query, src.site, 3);
-      for (const r of results) {
-        r.source = detectSource(r.url);
-      }
-      allResults.push(...results);
-    } catch (err) {
-      console.error(`[search] Failed to search ${src.name}: ${err.message}`);
-    }
-
-    // 避免请求太快被封
-    await sleep(300);
-  }
-
-  return allResults;
+  return searchWithConcurrency(query, sources);
 }
 
 /**

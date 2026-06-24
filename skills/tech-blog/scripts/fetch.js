@@ -186,7 +186,9 @@ function extractText($, $el) {
           }
         });
         if (rows.length > 0) {
-          result += '\n' + rows.map(r => r.join(' | ')).join('\n') + '\n\n';
+          const lines = rows.map(r => r.join(' | '));
+          const separator = rows[0].map(() => '---').join(' | ');
+          result += '\n' + [lines[0], separator, ...lines.slice(1)].join('\n') + '\n\n';
         }
       }
       // 其他块级元素，递归处理
@@ -220,6 +222,9 @@ async function main() {
   console.log(`[fetch] Fetching: ${url}\n`);
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     const res = await fetch(url, {
       headers: {
         'User-Agent': USER_AGENT,
@@ -227,8 +232,8 @@ async function main() {
         'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
       },
       redirect: 'follow',
-      timeout: 15000,
-    });
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
 
     if (!res.ok) {
       console.error(`[fetch] HTTP ${res.status}: ${res.statusText}`);
