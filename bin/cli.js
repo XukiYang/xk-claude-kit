@@ -7,6 +7,36 @@ const PKG_ROOT = path.resolve(__dirname, '..');
 const MANIFEST = '.xk-claude-kit-manifest.json';
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function copyDirSync(src, dest) {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDirSync(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+function rmrf(target) {
+  if (!fs.existsSync(target)) return;
+  for (const entry of fs.readdirSync(target, { withFileTypes: true })) {
+    const p = path.join(target, entry.name);
+    if (entry.isDirectory()) {
+      rmrf(p);
+    } else {
+      fs.unlinkSync(p);
+    }
+  }
+  fs.rmdirSync(target);
+}
+
+// ---------------------------------------------------------------------------
 // Skill discovery
 // ---------------------------------------------------------------------------
 
@@ -58,13 +88,17 @@ function cmdList() {
 
 function cmdInstall(targets) {
   const allSkills = findAllSkills();
-  const commandsDir = path.join(process.cwd(), '.claude', 'commands');
+  const global = targets.includes('--global');
+  const filtered = targets.filter(t => t !== '--global');
+  const commandsDir = global
+    ? path.join(process.env.HOME || process.env.USERPROFILE, '.claude', 'commands')
+    : path.join(process.cwd(), '.claude', 'commands');
 
   // Resolve which skills to install
   let toInstall;
-  if (targets.length > 0) {
+  if (filtered.length > 0) {
     toInstall = [];
-    for (const t of targets) {
+    for (const t of filtered) {
       const found = allSkills.find(s => s.name === t);
       if (!found) {
         console.error(`Skill not found: ${t}`);
@@ -89,12 +123,39 @@ function cmdInstall(targets) {
 
   let count = 0;
   for (const skill of toInstall) {
+    const skillDir = path.dirname(skill.path);
     const dest = path.join(commandsDir, `${skill.name}.md`);
-    fs.copyFileSync(skill.path, dest);
+    const scriptsSrc = path.join(skillDir, 'scripts');
+    const hasScripts = fs.existsSync(scriptsSrc) && fs.statSync(scriptsSrc).isDirectory();
+
+    // Copy scripts directory if present
+    let scriptsDirName = null;
+    if (hasScripts) {
+      scriptsDirName = `${skill.name}-scripts`;
+      const scriptsDest = path.join(commandsDir, scriptsDirName);
+      copyDirSync(scriptsSrc, scriptsDest);
+      console.log(`  Copied scripts: .claude/commands/${scriptsDirName}/`);
+    }
+
+    // Copy SKILL.md, rewriting script paths to .claude/commands relative paths
+    let content = fs.readFileSync(skill.path, 'utf-8');
+    if (hasScripts) {
+      const relScriptsPath = global
+        ? `~/.claude/commands/${scriptsDirName}`
+        : `.claude/commands/${scriptsDirName}`;
+      content = content.replace(/scripts\/search\.js/g, `${relScriptsPath}/search.js`);
+      content = content.replace(/scripts\/fetch\.js/g, `${relScriptsPath}/fetch.js`);
+    }
+    fs.writeFileSync(dest, content, 'utf-8');
 
     // Update manifest
     const existing = manifest.installed.findIndex(i => i.name === skill.name);
-    const entry = { name: skill.name, file: `${skill.name}.md`, source: skill.relPath };
+    const entry = {
+      name: skill.name,
+      file: `${skill.name}.md`,
+      source: skill.relPath,
+      ...(hasScripts ? { scriptsDir: scriptsDirName } : {}),
+    };
     if (existing >= 0) {
       manifest.installed[existing] = entry;
     } else {
@@ -105,12 +166,15 @@ function cmdInstall(targets) {
   }
 
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
-  console.log(`\nDone. ${count} skill(s) installed to .claude/commands/`);
+  console.log(`\nDone. ${count} skill(s) installed to ${commandsDir}`);
   console.log('Restart Claude Code to use the new skills.');
 }
 
-function cmdUninstall() {
-  const commandsDir = path.join(process.cwd(), '.claude', 'commands');
+function cmdUninstall(targets) {
+  const global = targets.includes('--global');
+  const commandsDir = global
+    ? path.join(process.env.HOME || process.env.USERPROFILE, '.claude', 'commands')
+    : path.join(process.cwd(), '.claude', 'commands');
   const manifestPath = path.join(commandsDir, MANIFEST);
 
   if (!fs.existsSync(manifestPath)) {
@@ -127,6 +191,13 @@ function cmdUninstall() {
       fs.unlinkSync(filePath);
       count++;
       console.log(`  Removed: ${entry.name}`);
+    }
+    if (entry.scriptsDir) {
+      const scriptsPath = path.join(commandsDir, entry.scriptsDir);
+      if (fs.existsSync(scriptsPath)) {
+        rmrf(scriptsPath);
+        console.log(`  Removed scripts: ${entry.scriptsDir}`);
+      }
     }
   }
 
@@ -148,13 +219,15 @@ switch (cmd) {
     cmdInstall(args);
     break;
   case 'uninstall':
-    cmdUninstall();
+    cmdUninstall(args);
     break;
   default:
     console.log(`Usage:
-  xk-claude-kit list                 列出所有可用 skill
-  xk-claude-kit install              安装全部 skill 到 .claude/commands/
-  xk-claude-kit install <name>       安装指定 skill
-  xk-claude-kit uninstall            移除已安装的 skill`);
+  xk-claude-kit list                        列出所有可用 skill
+  xk-claude-kit install                     安装全部 skill 到 .claude/commands/
+  xk-claude-kit install <name>              安装指定 skill
+  xk-claude-kit install <name> --global     安装指定 skill 到全局 ~/.claude/commands/
+  xk-claude-kit uninstall                   移除已安装的 skill
+  xk-claude-kit uninstall --global          移除全局已安装的 skill`);
     break;
 }
