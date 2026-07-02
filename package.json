@@ -8,7 +8,6 @@
   "files": [
     "bin/",
     "skills/",
-    "tools/",
     "mcp/"
   ],
   "keywords": ["claude", "skills", "claude-code", "commands"],
