@@ -9,21 +9,6 @@
       "name": "git-commit",
       "file": "git-commit.md",
       "source": "skills/git-commit/SKILL.md"
-    },
-    {
-      "name": "fluent",
-      "file": "fluent.md",
-      "source": "tools/design-themes/presets/fluent/SKILL.md"
-    },
-    {
-      "name": "glassmorphism",
-      "file": "glassmorphism.md",
-      "source": "tools/design-themes/presets/glassmorphism/SKILL.md"
-    },
-    {
-      "name": "modern-neutral",
-      "file": "modern-neutral.md",
-      "source": "tools/design-themes/presets/modern-neutral/SKILL.md"
     }
   ]
 }
