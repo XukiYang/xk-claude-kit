@@ -1,120 +1,121 @@
 # 一、Python 虚拟环境管理
 
-> 本文介绍 Python 虚拟环境的概念和使用方法。适合需要管理多个 Python 项目的开发者阅读。读完后你将能够在项目中正确配置和使用虚拟环境。
+> 本文介绍 Python 虚拟环境的配置与使用。适合需要管理多个 Python 项目的开发者。读完后能在项目中正确配置虚拟环境并管理依赖。
 
 ## 目录
 
 - [一、Python 虚拟环境管理](#一python-虚拟环境管理)
   - [1.1 什么是虚拟环境](#11-什么是虚拟环境)
-  - [1.2 创建虚拟环境](#12-创建虚拟环境)
+  - [1.2 创建与激活](#12-创建与激活)
     - [1.2.1 使用 venv](#121-使用-venv)
-    - [1.2.2 使用 conda](#122-使用-conda)
-  - [1.3 激活虚拟环境](#13-激活虚拟环境)
-  - [1.4 管理依赖](#14-管理依赖)
-  - [1.5 常见问题](#15-常见问题)
+    - [1.2.2 激活环境](#122-激活环境)
+  - [1.3 依赖管理](#13-依赖管理)
+- [二、常见问题与最佳实践](#二常见问题与最佳实践)
+  - [2.1 虚拟环境需要提交到 Git 吗](#21-虚拟环境需要提交到-git-吗)
+  - [2.2 多 Python 版本共存](#22-多-python-版本共存)
+
+---
 
 ## 1.1 什么是虚拟环境
 
-虚拟环境是 Python 的独立运行环境，每个项目可以拥有自己的依赖包，互不干扰。
+虚拟环境是 Python 的独立运行环境，每个项目拥有自己的依赖包，互不干扰。
 
 ```python
-# 全局环境中的包
-import requests  # 版本 2.31.0
+# 全局环境安装的 requests 版本
+import requests  # 2.31.0
 
-# 虚拟环境中的包
-import requests  # 版本 2.28.0（与全局版本独立）
+# 虚拟环境中可以使用不同版本
+import requests  # 2.28.0
 ```
 
-> 虚拟环境不会复制 Python 解释器本身，只是创建了一个独立的包安装目录。
+> 虚拟环境不会复制 Python 解释器，只创建独立的包安装目录。
 
-## 1.2 创建虚拟环境
+## 1.2 创建与激活
 
 ### 1.2.1 使用 venv
 
-Python 3.3+ 内置了 `venv` 模块：
+Python 3.3+ 内置 `venv` 模块，直接创建：
 
 ```bash
 python -m venv .venv
 ```
 
-执行后会生成 `.venv` 目录，包含以下结构：
+执行后生成 `.venv` 目录：
 
 ```
 .venv/
-├── bin/        # Linux/macOS
-├── Scripts/    # Windows
+├── bin/        # Linux/macOS 可执行文件
+├── Scripts/    # Windows 可执行文件
 ├── include/
-└── lib/
+└── lib/        # 安装的依赖包
 ```
 
-### 1.2.2 使用 conda
+### 1.2.2 激活环境
 
-如果使用 Anaconda 或 Miniconda：
-
-```bash
-conda create -n myenv python=3.11
-```
-
-> conda 环境支持管理非 Python 依赖，如 C 库和 CUDA。
-
-## 1.3 激活虚拟环境
-
-Linux/macOS：
+Linux / macOS：
 
 ```bash
 source .venv/bin/activate
 ```
 
-Windows：
+Windows PowerShell：
 
 ```powershell
 .venv\Scripts\Activate.ps1
 ```
 
-激活后，命令行提示符会显示环境名称：
+激活后命令行会显示环境名：`(.venv) $`
 
-```bash
-(.venv) $ python --version
-Python 3.11.0
-```
+## 1.3 依赖管理
 
-## 1.4 管理依赖
-
-将当前环境的包列表导出到文件：
+导出当前环境的依赖列表：
 
 ```bash
 pip freeze > requirements.txt
 ```
 
-从 `requirements.txt` 安装所有依赖：
+在新环境中一键安装所有依赖：
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 1.5 常见问题
+> `requirements.txt` 是 Python 项目依赖管理的标准方式，所有协作成员通过此文件保持环境一致。
 
-#### Q: 如何删除虚拟环境？
+---
 
-直接删除虚拟环境目录即可：
+### 二、常见问题与最佳实践
 
-```bash
-rm -rf .venv        # Linux/macOS
-rmdir /s /q .venv   # Windows
-```
+### 2.1 虚拟环境需要提交到 Git 吗
 
-#### Q: 虚拟环境需要提交到 Git 吗？
-
-不需要。在 `.gitignore` 中添加：
+不需要。在 `.gitignore` 中排除：
 
 ```
 .venv/
 venv/
 ```
 
-> 虚拟环境可以通过 `requirements.txt` 在任何机器上重建，不需要提交到版本控制。
+虚拟环境可通过 `requirements.txt` 在任意机器重建，提交到版本控制只会污染仓库。
+
+### 2.2 多 Python 版本共存
+
+使用 `pyenv` 管理多个 Python 版本，再为每个项目创建独立虚拟环境：
+
+```bash
+# 安装指定版本
+pyenv install 3.11.0
+
+# 为项目设置本地版本
+pyenv local 3.11.0
+
+# 创建虚拟环境
+python -m venv .venv
+```
+
+> `pyenv` 仅管理 Python 解释器版本，虚拟环境仍由 `venv` 创建，两者配合使用。
 
 ## 参考与来源
 
 - [Python 官方文档 - venv](https://docs.python.org/3/library/venv.html)
 - [Python Packaging User Guide](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/)
+- [pyenv 官方文档](https://github.com/pyenv/pyenv)
