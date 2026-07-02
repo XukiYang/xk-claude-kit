@@ -94,7 +94,7 @@ pip install -r requirements.txt
 
 ## 1.5 常见问题
 
-### Q: 如何删除虚拟环境？
+#### Q: 如何删除虚拟环境？
 
 直接删除虚拟环境目录即可：
 
@@ -103,7 +103,7 @@ rm -rf .venv        # Linux/macOS
 rmdir /s /q .venv   # Windows
 ```
 
-### Q: 虚拟环境需要提交到 Git 吗？
+#### Q: 虚拟环境需要提交到 Git 吗？
 
 不需要。在 `.gitignore` 中添加：
 
