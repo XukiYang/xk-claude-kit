@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>__TITLE__</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --terracotta: #C1553B;
+  --terracotta-light: #D4785F;
+  --forest: #1A3A2A;
+  --forest-light: #2D5E42;
+  --sand: #E8DCC8;
+  --cream: #F5F0E8;
+  --charcoal: #2A2A2A;
+  --warm-gray: #6B6560;
+  --gold: #B8963E;
+  --gold-light: #D4B062;
+  --danger: #9B2C2C;
+  --info: #2C5282;
+  --success: #276749;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  --radius: 6px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Sans SC', -apple-system, sans-serif;
+  background: var(--cream);
+  color: var(--charcoal);
+  line-height: 1.75;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════ HERO ═══════ */
+.hero {
+  position: relative;
+  min-height: 45vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 3rem 2.5rem;
+  background: var(--forest);
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.03) 60px, rgba(255,255,255,0.03) 61px),
+    repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.03) 60px, rgba(255,255,255,0.03) 61px);
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 40%;
+  background: linear-gradient(to top, rgba(26,58,42,0.95), transparent);
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; max-width: 900px; }
+.hero-label {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  margin-bottom: 1rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.2s forwards;
+}
+.hero h1 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.4s forwards;
+}
+.hero-date {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.7);
+  font-weight: 300;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.6s forwards;
+}
+.hero-ornament {
+  position: absolute;
+  top: 2rem; right: 2.5rem;
+  width: 80px; height: 80px;
+  border: 2px solid rgba(184,150,62,0.3);
+  border-radius: 50%;
+  z-index: 1;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.8s forwards;
+}
+.hero-ornament::before {
+  content: '旅';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 2rem;
+  color: rgba(184,150,62,0.5);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════ LAYOUT ═══════ */
+.page { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* ═══════ OVERVIEW STRIP ═══════ */
+.overview-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1px;
+  background: var(--sand);
+  border: 1px solid var(--sand);
+  border-radius: var(--radius);
+  margin: -2rem 1.5rem 2rem;
+  position: relative;
+  z-index: 2;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.overview-item {
+  background: #fff;
+  padding: 1.2rem 1.5rem;
+  text-align: center;
+  opacity: 0;
+  animation: fadeUp 0.6s forwards;
+}
+.overview-item:nth-child(1) { animation-delay: 0.3s; }
+.overview-item:nth-child(2) { animation-delay: 0.4s; }
+.overview-item:nth-child(3) { animation-delay: 0.5s; }
+.overview-item:nth-child(4) { animation-delay: 0.6s; }
+.overview-item:nth-child(5) { animation-delay: 0.7s; }
+.overview-item:nth-child(6) { animation-delay: 0.8s; }
+.overview-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--warm-gray);
+  margin-bottom: 0.3rem;
+}
+.overview-value {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--forest);
+}
+
+/* ═══════ SECTION DIVIDER ═══════ */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 3rem 0 2rem;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease;
+}
+.section-divider.visible { opacity: 1; transform: translateY(0); }
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--sand), transparent);
+}
+.section-divider h2 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--forest);
+  white-space: nowrap;
+}
+
+/* ═══════ DAY CARD ═══════ */
+.day-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.04);
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.day-card.visible { opacity: 1; transform: translateY(0); }
+
+.day-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: background 0.3s;
+}
+.day-header:hover { background: rgba(193,85,59,0.03); }
+
+.day-number {
+  flex-shrink: 0;
+  width: 52px; height: 52px;
+  background: var(--terracotta);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Serif SC', serif;
+}
+.day-number .num { font-size: 1.4rem; font-weight: 900; line-height: 1; }
+.day-number .label { font-size: 0.55rem; font-weight: 600; letter-spacing: 1px; opacity: 0.8; }
+
+.day-info { flex: 1; min-width: 0; }
+.day-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin-bottom: 0.25rem;
+}
+.day-weather {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--warm-gray);
+}
+.day-weather .temp { font-weight: 600; color: var(--terracotta); }
+.day-weather-tip {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  background: #FFF8E1;
+  color: #F57F17;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.day-toggle {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--sand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+.day-toggle svg { width: 16px; height: 16px; stroke: var(--warm-gray); transition: transform 0.3s; }
+.day-card.open .day-toggle svg { transform: rotate(180deg); }
+
+.day-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.day-card.open .day-body { max-height: 5000px; }
+.day-inner { padding: 0 2rem 2rem; }
+
+/* ═══════ CONTENT SECTIONS ═══════ */
+.content-section { margin-bottom: 2rem; }
+.content-section:last-child { margin-bottom: 0; }
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--sand);
+}
+.section-icon {
+  width: 28px; height: 28px;
+  background: var(--terracotta);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+/* ═══════ ROUTE CARDS ═══════ */
+.route-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.route-card {
+  padding: 1.2rem;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--sand);
+  background: var(--cream);
+  transition: all 0.3s;
+  position: relative;
+}
+.route-card:hover { border-color: var(--terracotta-light); box-shadow: var(--shadow-sm); }
+.route-card.recommended {
+  border-color: var(--terracotta);
+  background: linear-gradient(135deg, #FFF5F0, #FFF);
+}
+.route-card.recommended::after {
+  content: '推荐';
+  position: absolute;
+  top: -8px; right: 12px;
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.6rem;
+  border-radius: 3px;
+  letter-spacing: 1px;
+}
+.route-name {
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--forest);
+  margin-bottom: 0.5rem;
+}
+.route-desc {
+  font-size: 0.85rem;
+  color: var(--warm-gray);
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+.route-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.route-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--charcoal);
+}
+.route-meta-item .icon { font-size: 0.9rem; opacity: 0.7; }
+
+/* ═══════ SPOT CARDS ═══════ */
+.spot-grid { display: grid; gap: 1rem; }
+.spot-card {
+  display: flex;
+  gap: 1.2rem;
+  padding: 1.2rem;
+  background: var(--cream);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--terracotta);
+  transition: all 0.3s;
+}
+.spot-card:hover { background: #FFF; box-shadow: var(--shadow-sm); }
+.spot-marker {
+  flex-shrink: 0;
+  width: 36px; height: 36px;
+  background: var(--forest);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.spot-content { flex: 1; min-width: 0; }
+.spot-name {
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--charcoal);
+  margin-bottom: 0.15rem;
+}
+.spot-badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+.spot-badge-must { background: var(--terracotta); color: #fff; }
+.spot-badge-rec { background: var(--forest-light); color: #fff; }
+.spot-badge-night { background: var(--charcoal); color: #fff; }
+.spot-badge-exp { background: var(--gold); color: #fff; }
+.spot-desc {
+  font-size: 0.88rem;
+  color: var(--warm-gray);
+  margin-top: 0.3rem;
+  line-height: 1.65;
+}
+.spot-tip {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #FFF8E1;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #795548;
+  line-height: 1.5;
+}
+.spot-tip::before { content: '💡 '; }
+
+/* ═══════ FOOD SECTION ═══════ */
+.food-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.food-tag {
+  padding: 0.35rem 0.9rem;
+  background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+  color: var(--success);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.food-tag:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+
+.budget-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.budget-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  background: var(--cream);
+  color: var(--warm-gray);
+  font-weight: 600;
+  font-size: 0.8rem;
+  width: 80px;
+}
+.budget-table td {
+  padding: 0.5rem 0.75rem;
+  color: var(--charcoal);
+  font-weight: 500;
+}
+
+.meal-prep {
+  margin-top: 1rem;
+  padding: 1rem 1.2rem;
+  background: #FFF3E0;
+  border-radius: var(--radius);
+  border-left: 3px solid #FF9800;
+  font-size: 0.85rem;
+  color: #4E342E;
+}
+.meal-prep-title { font-weight: 700; margin-bottom: 0.3rem; }
+
+/* ═══════ HOTEL SECTION ═══════ */
+.hotel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+.hotel-item {
+  padding: 1rem;
+  background: var(--cream);
+  border-radius: var(--radius);
+}
+.hotel-item-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--warm-gray);
+  margin-bottom: 0.3rem;
+}
+.hotel-item-value {
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  line-height: 1.5;
+}
+
+/* ═══════ ROAD INFO ═══════ */
+.road-box {
+  padding: 1rem 1.2rem;
+  background: #E3F2FD;
+  border-radius: var(--radius);
+  border-left: 3px solid #1976D2;
+  font-size: 0.88rem;
+  color: #1A237E;
+  line-height: 1.6;
+}
+
+/* ═══════ WARNINGS ═══════ */
+.warning-list { display: grid; gap: 0.5rem; }
+.warning-item {
+  padding: 0.75rem 1rem;
+  background: #FFF8E1;
+  border-radius: var(--radius);
+  border-left: 3px solid #FFA000;
+  font-size: 0.85rem;
+  color: #4E342E;
+  line-height: 1.5;
+}
+
+/* ═══════ COST SUMMARY ═══════ */
+.cost-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.cost-header {
+  padding: 1.5rem 2rem;
+  background: var(--forest);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cost-header-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.cost-header-total {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--gold-light);
+}
+.cost-body { padding: 1.5rem 2rem; }
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--sand);
+  font-size: 0.9rem;
+}
+.cost-row:last-child { border-bottom: none; }
+.cost-row-name { color: var(--warm-gray); }
+.cost-row-amount { font-weight: 600; color: var(--charcoal); }
+.cost-note {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--cream);
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  color: var(--warm-gray);
+  line-height: 1.5;
+}
+
+/* ═══════ EMERGENCY ═══════ */
+.emergency-grid { display: grid; gap: 1rem; }
+.emergency-card {
+  padding: 1.2rem 1.5rem;
+  background: #FFF5F5;
+  border-radius: var(--radius);
+  border-left: 4px solid var(--danger);
+}
+.emergency-title {
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--danger);
+  margin-bottom: 0.5rem;
+}
+.emergency-content {
+  font-size: 0.88rem;
+  color: #4A4A4A;
+  line-height: 1.7;
+}
+
+/* ═══════ PACKING LIST ═══════ */
+.packing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.4rem;
+}
+.packing-item {
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.packing-check {
+  flex-shrink: 0;
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--warm-gray);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.packing-check.checked {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+.packing-check.checked::after {
+  content: '✓';
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.packing-item.done { text-decoration: line-through; color: var(--warm-gray); }
+
+/* ═══════ TIMELINE NAV ═══════ */
+.timeline-nav {
+  position: fixed;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.timeline-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--sand);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+.timeline-dot:hover,
+.timeline-dot.active {
+  background: var(--terracotta);
+  transform: scale(1.3);
+}
+.timeline-dot::before {
+  content: attr(data-label);
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  background: #fff;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.timeline-dot:hover::before { opacity: 1; }
+.timeline-line {
+  width: 2px;
+  height: 20px;
+  background: var(--sand);
+}
+
+/* ═══════ FOOTER ═══════ */
+.footer {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--warm-gray);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--sand);
+  margin-top: 3rem;
+}
+.footer-brand {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--forest);
+  margin-bottom: 0.5rem;
+}
+
+/* ═══════ RESPONSIVE ═══════ */
+@media (max-width: 768px) {
+  .hero { min-height: 35vh; padding: 2rem 1.5rem; }
+  .hero h1 { font-size: 1.8rem; }
+  .hero-ornament { display: none; }
+  .overview-strip { grid-template-columns: repeat(3, 1fr); margin: -1.5rem 1rem 1.5rem; }
+  .route-grid { grid-template-columns: 1fr; }
+  .day-header { padding: 1.2rem 1.5rem; gap: 1rem; }
+  .day-inner { padding: 0 1.5rem 1.5rem; }
+  .cost-header { flex-direction: column; gap: 0.5rem; text-align: center; }
+  .timeline-nav { display: none; }
+  .packing-grid { grid-template-columns: 1fr; }
+  #route-map { height: 320px; }
+  .route-map-section { margin: 1.5rem auto; padding: 0 1rem; }
+}
+
+/* ═══════ ROUTE MAP ═══════ */
+.route-map-section {
+  margin: 2.5rem auto;
+  max-width: 1100px;
+  padding: 0 1.5rem;
+}
+.route-map-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.route-map-header {
+  padding: 1.2rem 2rem;
+  background: var(--forest);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.route-map-header-icon {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+.route-map-header-text h3 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+}
+.route-map-header-text p {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin: 0;
+}
+#route-map {
+  width: 100%;
+  height: 480px;
+  z-index: 1;
+}
+.map-legend {
+  padding: 0.8rem 2rem;
+  background: var(--cream);
+  border-top: 1px solid var(--sand);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  font-size: 0.8rem;
+  color: var(--warm-gray);
+}
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.map-legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.map-legend-line {
+  width: 20px; height: 3px;
+  border-radius: 2px;
+}
+
+/* ═══════ TIMELINE / SCHEDULE ═══════ */
+.schedule-timeline {
+  position: relative;
+  padding-left: 2rem;
+  margin: 0.5rem 0;
+}
+.schedule-timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--terracotta), var(--sand));
+  border-radius: 1px;
+}
+.schedule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  position: relative;
+}
+.schedule-item::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  top: 0.9rem;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 2.5px solid var(--terracotta);
+  border-radius: 50%;
+  z-index: 1;
+  margin-left: 2.5px;
+}
+.schedule-item:first-child::before {
+  background: var(--terracotta);
+  box-shadow: 0 0 0 3px rgba(193,85,59,0.2);
+}
+.schedule-time {
+  flex-shrink: 0;
+  width: 50px;
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--terracotta);
+  padding-top: 0.05rem;
+}
+.schedule-event {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  line-height: 1.5;
+}
+.schedule-type-depart .schedule-event { font-weight: 600; }
+.schedule-type-arrive .schedule-event { color: var(--forest); font-weight: 500; }
+.schedule-type-food .schedule-event { color: #4E342E; }
+.schedule-type-hotel .schedule-event { color: var(--info); }
+
+/* ═══════ ENHANCED HOTEL CARD ═══════ */
+.hotel-detail-card {
+  background: #fff;
+  border: 1.5px solid var(--sand);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.hotel-detail-card:hover { border-color: var(--terracotta-light); box-shadow: var(--shadow-sm); }
+.hotel-detail-header {
+  padding: 1rem 1.2rem;
+  background: linear-gradient(135deg, #FFF5F0, #FFF);
+  border-bottom: 1px solid var(--sand);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.hotel-detail-icon {
+  width: 36px; height: 36px;
+  background: var(--terracotta);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+.hotel-detail-name {
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--charcoal);
+}
+.hotel-detail-body {
+  padding: 1rem 1.2rem;
+}
+.hotel-detail-row {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.hotel-detail-label {
+  flex-shrink: 0;
+  width: 80px;
+  font-weight: 600;
+  color: var(--warm-gray);
+}
+.hotel-detail-value {
+  color: var(--charcoal);
+}
+.hotel-detail-reason {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  background: #E8F5E9;
+  border-radius: 4px;
+  font-size: 0.83rem;
+  color: var(--success);
+  line-height: 1.5;
+}
+.hotel-detail-reason::before { content: '💡 '; }
+
+/* ═══════ SCROLLBAR ═══════ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--warm-gray); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-ornament"></div>
+  <div class="hero-content">
+    <div class="hero-label">行 程 规 划</div>
+    <h1 id="hero-title">__TITLE__</h1>
+    <div class="hero-date" id="hero-date">__DATE__</div>
+  </div>
+</div>
+
+<div class="overview-strip" id="overview"></div>
+
+<div class="route-map-section" id="map-section" style="display:none;">
+  <div class="route-map-card">
+    <div class="route-map-header">
+      <div class="route-map-header-icon">🗺️</div>
+      <div class="route-map-header-text">
+        <h3>路线总览</h3>
+        <p>点击节点查看详情，拖拽/缩放探索地图</p>
+      </div>
+    </div>
+    <div id="route-map"></div>
+    <div class="map-legend">
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--terracotta);"></div>行程节点</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--forest);"></div>起/终点</div>
+      <div class="map-legend-item"><div class="map-legend-line" style="background:var(--terracotta);"></div>行驶路线</div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="app"></div>
+
+<div class="footer">
+  <div class="footer-brand">山河行旅</div>
+  行程报告生成于 __GENERATED_AT__ · 价格信息仅供参考，出行前请核实最新信息
+</div>
+
+<div class="timeline-nav" id="timeline"></div>
+
+<script>
+const data = __ITINERARY_JSON__;
+
+// ═══════ ROUTE MAP ═══════
+function initRouteMap() {
+  const nodes = data.route_nodes;
+  if (!nodes || nodes.length < 2) return;
+
+  const section = document.getElementById('map-section');
+  section.style.display = 'block';
+
+  const map = L.map('route-map', {
+    scrollWheelZoom: true,
+    zoomControl: true
+  });
+
+  // Use Gaode tiles (better for China)
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1', '2', '3', '4'],
+    maxZoom: 18,
+    attribution: '&copy; 高德地图'
+  }).addTo(map);
+
+  // Custom marker icons
+  const startIcon = L.divIcon({
+    className: 'custom-marker',
+    html: '<div style="width:32px;height:32px;background:var(--forest,#1A3A2A);border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.3);">起</div>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
+  });
+  const endIcon = L.divIcon({
+    className: 'custom-marker',
+    html: '<div style="width:32px;height:32px;background:var(--forest,#1A3A2A);border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.3);">终</div>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
+  });
+  const midIcon = L.divIcon({
+    className: 'custom-marker',
+    html: '<div style="width:28px;height:28px;background:var(--terracotta,#C1553B);border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.3);">__NUM__</div>',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14]
+  });
+
+  const latlngs = [];
+  const markers = [];
+
+  nodes.forEach((node, i) => {
+    if (node.lat == null || node.lng == null) return;
+    const ll = [node.lat, node.lng];
+    latlngs.push(ll);
+
+    let icon;
+    if (i === 0) icon = startIcon;
+    else if (i === nodes.length - 1) icon = endIcon;
+    else icon = L.divIcon({
+      className: 'custom-marker',
+      html: '<div style="width:28px;height:28px;background:var(--terracotta,#C1553B);border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.3);">' + (i) + '</div>',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+
+    const marker = L.marker(ll, { icon }).addTo(map);
+    let popup = '<div style="font-family:Noto Sans SC,sans-serif;min-width:140px;">';
+    popup += '<div style="font-family:Noto Serif SC,serif;font-weight:700;font-size:14px;margin-bottom:4px;">' + node.name + '</div>';
+    if (node.day) popup += '<div style="font-size:12px;color:#666;">📅 Day ' + node.day + '</div>';
+    if (node.highlight) popup += '<div style="font-size:12px;color:#C1553B;margin-top:2px;">' + node.highlight + '</div>';
+    popup += '</div>';
+    marker.bindPopup(popup);
+    markers.push(marker);
+  });
+
+  // Draw route line
+  if (latlngs.length >= 2) {
+    L.polyline(latlngs, {
+      color: '#C1553B',
+      weight: 3,
+      opacity: 0.8,
+      dashArray: '8, 6',
+      lineJoin: 'round'
+    }).addTo(map);
+
+    // Add animated direction arrows
+    const arrowDecorator = latlngs.slice(0, -1).map((ll, i) => {
+      const mid = [(ll[0] + latlngs[i+1][0])/2, (ll[1] + latlngs[i+1][1])/2];
+      return L.marker(mid, {
+        icon: L.divIcon({
+          className: 'arrow-marker',
+          html: '<div style="color:#C1553B;font-size:16px;text-shadow:0 1px 3px rgba(0,0,0,0.2);">➜</div>',
+          iconSize: [16, 16],
+          iconAnchor: [8, 8]
+        })
+      }).addTo(map);
+    });
+  }
+
+  // Fit bounds with padding
+  if (latlngs.length > 0) {
+    map.fitBounds(latlngs, { padding: [40, 40] });
+  }
+}
+
+function getSpotBadgeClass(highlight) {
+  if (!highlight) return '';
+  const h = highlight.toLowerCase();
+  if (h.includes('必去')) return 'spot-badge-must';
+  if (h.includes('推荐')) return 'spot-badge-rec';
+  if (h.includes('夜景') || h.includes('夜')) return 'spot-badge-night';
+  return 'spot-badge-exp';
+}
+
+function render() {
+  // Overview
+  if (data.overview) {
+    const strip = document.getElementById('overview');
+    strip.innerHTML = data.overview.map(item =>
+      `<div class="overview-item"><div class="overview-label">${item.label}</div><div class="overview-value">${item.value}</div></div>`
+    ).join('');
+  }
+
+  const app = document.getElementById('app');
+  let html = '';
+
+  // Timeline nav
+  let timelineHTML = '';
+
+  // Days
+  if (data.days) {
+    data.days.forEach((day, i) => {
+      const dayNum = i + 1;
+      timelineHTML += `<div class="timeline-dot" data-label="Day ${dayNum}" onclick="scrollToDay(${i})"></div>`;
+      if (i < data.days.length - 1) timelineHTML += '<div class="timeline-line"></div>';
+
+      html += `<div class="day-card" id="day-${i}">`;
+
+      // Header
+      html += `<div class="day-header" onclick="toggleDay(${i})">`;
+      html += `<div class="day-number"><span class="num">${dayNum}</span><span class="label">DAY</span></div>`;
+      html += `<div class="day-info">`;
+      html += `<div class="day-title">${day.title}</div>`;
+      if (day.weather) {
+        html += `<div class="day-weather"><span class="temp">${day.weather}</span></div>`;
+        if (day.weather_tip) html += `<span class="day-weather-tip">${day.weather_tip}</span>`;
+      }
+      html += `</div>`;
+      html += `<div class="day-toggle"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>`;
+      html += `</div>`;
+
+      // Body
+      html += `<div class="day-body"><div class="day-inner">`;
+
+      // Schedule timeline
+      if (day.schedule && day.schedule.length) {
+        html += `<div class="content-section"><div class="section-label"><span class="section-icon">⏰</span>时间安排</div>`;
+        html += `<div class="schedule-timeline">`;
+        day.schedule.forEach(item => {
+          const typeClass = item.type ? ` schedule-type-${item.type}` : '';
+          html += `<div class="schedule-item${typeClass}">`;
+          html += `<div class="schedule-time">${item.time}</div>`;
+          html += `<div class="schedule-event">${item.event}</div>`;
+          html += `</div>`;
+        });
+        html += `</div></div>`;
+      }
+
+      // Transport
+      if (day.transport && day.transport.routes) {
+        html += `<div class="content-section"><div class="section-label"><span class="section-icon">🚗</span>交通路线</div>`;
+        html += `<div class="route-grid">`;
+        day.transport.routes.forEach((route, ri) => {
+          html += `<div class="route-card${ri === 0 ? ' recommended' : ''}">`;
+          html += `<div class="route-name">${route.name}</div>`;
+          html += `<div class="route-desc">${route.desc}</div>`;
+          html += `<div class="route-meta">`;
+          if (route.distance) html += `<div class="route-meta-item"><span class="icon">📏</span>${route.distance}</div>`;
+          if (route.time) html += `<div class="route-meta-item"><span class="icon">⏱</span>${route.time}</div>`;
+          if (route.toll) html += `<div class="route-meta-item"><span class="icon">💰</span>${route.toll}</div>`;
+          html += `</div></div>`;
+        });
+        html += `</div></div>`;
+      } else if (day.transport) {
+        html += `<div class="content-section"><div class="section-label"><span class="section-icon">🚗</span>交通</div>`;
+        html += `<div class="hotel-grid">`;
+        Object.entries(day.transport).forEach(([k,v]) => {
+          html += `<div class="hotel-item"><div class="hotel-item-label">${k}</div><div class="hotel-item-value">${v}</div></div>`;
+        });
+        html += `</div></div>`;
+      }
+
+      // Spots
+      if (day.spots) {
+        html += `<div class="content-section"><div class="section-label"><span class="section-icon">📍</span>景点推荐</div>`;
+        html += `<div class="spot-grid">`;
+        day.spots.forEach((spot, si) => {
+          html += `<div class="spot-card">`;
+          html += `<div class="spot-marker">${si + 1}</div>`;
+          html += `<div class="spot-content">`;
+          html += `<div class="spot-name">${spot.name}`;
+          if (spot.highlight) html += `<span class="spot-badge ${getSpotBadgeClass(spot.highlight)}">${spot.highlight}</span>`;
+          html += `</div>`;
+          html += `<div class="spot-desc">${spot.desc}</div>`;
+          if (spot.tip) html += `<div class="spot-tip">${spot.tip}</div>`;
+          html += `</div></div>`;
+        });
+        html += `</div></div>`;
+      }
+
+      // Food
+      if (day.food) {
+        html += `<div class="content-section"><div class="section-label"><span class="section-icon">🍜</span>餐饮推荐</div>`;
+        if (day.food.must_try) {
+          html += `<div class="food-tags">${day.food.must_try.map(f => `<span class="food-tag">${f}</span>`).join('')}</div>`;
+        }
+        if (day.food.budget) {
+          html += `<table class="budget-table">`;
+          Object.entries(day.food.budget).forEach(([k,v]) => {
+            html += `<tr><th>${k}</th><td>${v}</td></tr>`;
+          });
+          html += `</table>`;
+        }
+        if (day.food.meal_prep) {
+          html += `<div class="meal-prep"><div class="meal-prep-title">🚗 自驾简餐预备</div>${day.food.meal_prep}</div>`;
+        }
+        html += `</div>`;
+      }
+
+      // Hotel
+      if (day.hotel) {
+        html += `<div class="content-section"><div class="section-label"><span class="section-icon">🏨</span>住宿推荐</div>`;
+        // Support both new structured format and legacy flat format
+        if (day.hotel.area) {
+          // New structured format
+          html += `<div class="hotel-detail-card">`;
+          html += `<div class="hotel-detail-header">`;
+          html += `<div class="hotel-detail-icon">📍</div>`;
+          html += `<div class="hotel-detail-name">${day.hotel.area}</div>`;
+          html += `</div>`;
+          html += `<div class="hotel-detail-body">`;
+          if (day.hotel.precise) {
+            html += `<div class="hotel-detail-row"><div class="hotel-detail-label">精确位置</div><div class="hotel-detail-value">${day.hotel.precise}</div></div>`;
+          }
+          if (day.hotel.amenities) {
+            html += `<div class="hotel-detail-row"><div class="hotel-detail-label">周边配套</div><div class="hotel-detail-value">${day.hotel.amenities}</div></div>`;
+          }
+          if (day.hotel.parking) {
+            html += `<div class="hotel-detail-row"><div class="hotel-detail-label">停车信息</div><div class="hotel-detail-value">${day.hotel.parking}</div></div>`;
+          }
+          if (day.hotel.price_range) {
+            html += `<div class="hotel-detail-row"><div class="hotel-detail-label">参考价格</div><div class="hotel-detail-value">${day.hotel.price_range}</div></div>`;
+          }
+          if (day.hotel.distance_next) {
+            html += `<div class="hotel-detail-row"><div class="hotel-detail-label">距次日景点</div><div class="hotel-detail-value">${day.hotel.distance_next}</div></div>`;
+          }
+          if (day.hotel.reason) {
+            html += `<div class="hotel-detail-reason">${day.hotel.reason}</div>`;
+          }
+          if (day.hotel.tip) {
+            html += `<div class="hotel-detail-reason" style="background:#FFF8E1;color:#795548;">${day.hotel.tip}</div>`;
+          }
+          html += `</div></div>`;
+        } else {
+          // Legacy flat format (backward compatible)
+          html += `<div class="hotel-grid">`;
+          Object.entries(day.hotel).forEach(([k,v]) => {
+            html += `<div class="hotel-item"><div class="hotel-item-label">${k}</div><div class="hotel-item-value">${v}</div></div>`;
+          });
+          html += `</div>`;
+        }
+        html += `</div>`;
+      }
+
+      // Road info
+      if (day.road_info) {
+        html += `<div class="content-section"><div class="section-label"><span class="section-icon">🛣</span>路况信息</div>`;
+        html += `<div class="road-box">${day.road_info}</div></div>`;
+      }
+
+      // Warnings
+      if (day.warnings && day.warnings.length) {
+        html += `<div class="content-section"><div class="section-label"><span class="section-icon">⚠</span>注意事项</div>`;
+        html += `<div class="warning-list">${day.warnings.map(w => `<div class="warning-item">${w}</div>`).join('')}</div></div>`;
+      }
+
+      html += `</div></div>`;
+      html += `</div>`;
+    });
+  }
+
+  // Cost summary
+  if (data.cost_summary) {
+    html += `<div class="section-divider"><h2>费 用 明 细</h2></div>`;
+    html += `<div class="cost-card">`;
+    html += `<div class="cost-header"><div class="cost-header-title">费用汇总</div><div class="cost-header-total">${data.cost_summary.total}</div></div>`;
+    html += `<div class="cost-body">`;
+    data.cost_summary.items.forEach(item => {
+      html += `<div class="cost-row"><span class="cost-row-name">${item.name}</span><span class="cost-row-amount">${item.amount}</span></div>`;
+    });
+    if (data.cost_summary.note) html += `<div class="cost-note">${data.cost_summary.note}</div>`;
+    html += `</div></div>`;
+  }
+
+  // Emergency
+  if (data.emergency) {
+    html += `<div class="section-divider"><h2>应 急 信 息</h2></div>`;
+    html += `<div class="emergency-grid">`;
+    data.emergency.forEach(e => {
+      html += `<div class="emergency-card"><div class="emergency-title">${e.title}</div><div class="emergency-content">${e.content}</div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Packing list
+  if (data.packing_list) {
+    html += `<div class="section-divider"><h2>行 李 清 单</h2></div>`;
+    html += `<div class="packing-grid">`;
+    data.packing_list.forEach((item, i) => {
+      html += `<div class="packing-item" onclick="togglePack(this)"><div class="packing-check"></div><span>${item}</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  app.innerHTML = html;
+  document.getElementById('timeline').innerHTML = timelineHTML;
+
+  // Init scroll observer
+  initObserver();
+}
+
+function toggleDay(i) {
+  const card = document.getElementById('day-' + i);
+  card.classList.toggle('open');
+}
+
+function scrollToDay(i) {
+  const card = document.getElementById('day-' + i);
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!card.classList.contains('open')) card.classList.add('open');
+}
+
+function togglePack(el) {
+  el.classList.toggle('done');
+  el.querySelector('.packing-check').classList.toggle('checked');
+}
+
+function initObserver() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+  document.querySelectorAll('.day-card, .section-divider, .cost-card, .emergency-grid').forEach(el => {
+    observer.observe(el);
+  });
+
+  // Timeline active state
+  const timelineObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        const idx = id.replace('day-', '');
+        document.querySelectorAll('.timeline-dot').forEach((dot, i) => {
+          dot.classList.toggle('active', i === parseInt(idx));
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.day-card').forEach(el => timelineObserver.observe(el));
+}
+
+render();
+initRouteMap();
+
+// Open first day
+setTimeout(() => { document.getElementById('day-0')?.classList.add('open'); }, 800);
+</script>
+</body>
+</html>
