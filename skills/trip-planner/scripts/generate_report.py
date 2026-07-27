@@ -14,6 +14,23 @@ from pathlib import Path
 from datetime import datetime
 
 
+def _find_template() -> Path | None:
+    """查找模板文件，支持多种安装位置"""
+    script_dir = Path(__file__).parent
+    candidates = [
+        # 开发环境：相对于项目根目录
+        script_dir.parent / "templates" / "report.html",
+        # 全局安装：同级的 trip-planner-templates/ 目录
+        script_dir.parent / "trip-planner-templates" / "report.html",
+        # 全局安装：commands/templates/ 目录（旧兼容）
+        script_dir.parent / "templates" / "report.html",
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
+
+
 def generate_report(itinerary: dict, output_dir: str = None, trip_name: str = None) -> dict:
     """生成 HTML 行程报告，返回输出文件路径信息
 
@@ -25,9 +42,9 @@ def generate_report(itinerary: dict, output_dir: str = None, trip_name: str = No
     Returns:
         {"html": "报告路径", "json": "JSON路径", "dir": "输出目录"}
     """
-    template_path = Path(__file__).parent.parent / "templates" / "report.html"
+    template_path = _find_template()
 
-    if template_path.exists():
+    if template_path and template_path.exists():
         with open(template_path, "r", encoding="utf-8") as f:
             template = f.read()
     else:
@@ -113,8 +130,8 @@ def main():
         out_file = Path(output_path)
         out_file.parent.mkdir(parents=True, exist_ok=True)
 
-        template_path = Path(__file__).parent.parent / "templates" / "report.html"
-        if template_path.exists():
+        template_path = _find_template()
+        if template_path and template_path.exists():
             with open(template_path, "r", encoding="utf-8") as f:
                 template = f.read()
         else:

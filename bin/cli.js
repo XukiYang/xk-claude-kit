@@ -137,7 +137,18 @@ function cmdInstall(targets) {
       console.log(`  Copied scripts: .claude/commands/${scriptsDirName}/`);
     }
 
-    // Copy SKILL.md, rewriting script paths to .claude/commands relative paths
+    // Copy templates directory if present
+    const templatesSrc = path.join(skillDir, 'templates');
+    const hasTemplates = fs.existsSync(templatesSrc) && fs.statSync(templatesSrc).isDirectory();
+    let templatesDirName = null;
+    if (hasTemplates) {
+      templatesDirName = `${skill.name}-templates`;
+      const templatesDest = path.join(commandsDir, templatesDirName);
+      copyDirSync(templatesSrc, templatesDest);
+      console.log(`  Copied templates: .claude/commands/${templatesDirName}/`);
+    }
+
+    // Copy SKILL.md, rewriting script/template paths to .claude/commands relative paths
     let content = fs.readFileSync(skill.path, 'utf-8');
     if (hasScripts) {
       const relScriptsPath = global
@@ -145,6 +156,14 @@ function cmdInstall(targets) {
         : `.claude/commands/${scriptsDirName}`;
       content = content.replace(/scripts\/search\.js/g, `${relScriptsPath}/search.js`);
       content = content.replace(/scripts\/fetch\.js/g, `${relScriptsPath}/fetch.js`);
+      // Rewrite Python script references (e.g. "scripts/search_weather.py")
+      content = content.replace(/scripts\/([\w.-]+\.py)/g, `${relScriptsPath}/$1`);
+    }
+    if (hasTemplates) {
+      const relTemplatesPath = global
+        ? `~/.claude/commands/${templatesDirName}`
+        : `.claude/commands/${templatesDirName}`;
+      content = content.replace(/templates\//g, `${relTemplatesPath}/`);
     }
     fs.writeFileSync(dest, content, 'utf-8');
 
@@ -155,6 +174,7 @@ function cmdInstall(targets) {
       file: `${skill.name}.md`,
       source: skill.relPath,
       ...(hasScripts ? { scriptsDir: scriptsDirName } : {}),
+      ...(hasTemplates ? { templatesDir: templatesDirName } : {}),
     };
     if (existing >= 0) {
       manifest.installed[existing] = entry;
@@ -199,6 +219,13 @@ function cmdUninstall(targets) {
         console.log(`  Removed scripts: ${entry.scriptsDir}`);
       }
     }
+    if (entry.templatesDir) {
+      const templatesPath = path.join(commandsDir, entry.templatesDir);
+      if (fs.existsSync(templatesPath)) {
+        rmrf(templatesPath);
+        console.log(`  Removed templates: ${entry.templatesDir}`);
+      }
+    }
   }
 
   fs.unlinkSync(manifestPath);
@@ -221,12 +248,16 @@ switch (cmd) {
   case 'uninstall':
     cmdUninstall(args);
     break;
+  case 'setup':
+    require('./install.js');
+    break;
   default:
     console.log(`Usage:
   xk-claude-kit list                        列出所有可用 skill
   xk-claude-kit install                     安装全部 skill 到 .claude/commands/
   xk-claude-kit install <name>              安装指定 skill
   xk-claude-kit install <name> --global     安装指定 skill 到全局 ~/.claude/commands/
+  xk-claude-kit setup                       交互式选择安装 skill
   xk-claude-kit uninstall                   移除已安装的 skill
   xk-claude-kit uninstall --global          移除全局已安装的 skill`);
     break;

@@ -10,6 +10,14 @@
     "skills/",
     "mcp/"
   ],
-  "keywords": ["claude", "skills", "claude-code", "commands"],
-  "license": "MIT"
+  "keywords": [
+    "claude",
+    "skills",
+    "claude-code",
+    "commands"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "puppeteer-core": "^24.43.1"
+  }
 }
